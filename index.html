@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Premium Ride | Jual Motor Bekas Eksklusif</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0a0a0b;
+            color: #ffffff;
+            font-family: 'Inter', sans-serif;
+        }
+        .glass-card {
+            background: rgba(255, 255, 255, 0.03);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+        }
+        .neon-text {
+            text-shadow: 0 0 10px #3b82f6, 0 0 20px #3b82f6;
+        }
+        .gradient-border {
+            border: 2px solid transparent;
+            background-image: linear-gradient(#0a0a0b, #0a0a0b), radial-gradient(circle at top left, #3b82f6, #8b5cf6);
+            background-origin: border-box;
+            background-clip: content-box, border-box;
+        }
+    </style>
+</head>
+<body class="antialiased">
+
+    <section class="relative min-h-screen flex items-center justify-center overflow-hidden px-6">
+        <div class="absolute top-[-10%] left-[-10%] w-[500px] h-[500px] bg-blue-900/20 rounded-full blur-[120px]"></div>
+        <div class="absolute bottom-[-10%] right-[-10%] w-[500px] h-[500px] bg-purple-900/20 rounded-full blur-[120px]"></div>
+
+        <div class="max-w-6xl mx-auto grid md:grid-cols-2 gap-12 items-center relative z-10">
+            <div>
+                <span class="text-blue-400 font-mono tracking-widest uppercase text-sm mb-4 block">Edisi Terbatas</span>
+                <h1 class="text-6xl md:text-7xl font-black mb-6 leading-tight">THE NEXT <br><span class="text-blue-500 neon-text">EVOLUTION</span></h1>
+                <p class="text-gray-400 text-lg mb-8 leading-relaxed">
+                    Performa mesin sempurna dengan estetika yang tak lekang oleh waktu. Kendaraan ini bukan sekadar alat transportasi, tapi identitas.
+                </p>
+                
+                <div class="flex gap-4">
+                    <a href="https://wa.me/6281234567890" target="_blank" class="gradient-border px-8 py-4 rounded-full font-bold hover:scale-105 transition-all flex items-center gap-2">
+                        <i class="fab fa-whatsapp text-xl"></i> HUBUNGI PEMILIK
+                    </a>
+                </div>
+            </div>
+
+            <div class="glass-card p-4 relative group">
+                <img src="https://images.unsplash.com/photo-1558981403-c5f91cbcf523?auto=format&fit=crop&q=80&w=800" alt="Motor" class="rounded-xl grayscale hover:grayscale-0 transition-all duration-700">
+                <div class="absolute -bottom-6 -right-6 glass-card p-6 border-blue-500/50">
+                    <p class="text-xs text-gray-400 uppercase">Harga Penawaran</p>
+                    <p class="text-2xl font-bold text-blue-400">Rp 45.000.000</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <section class="py-24 px-6 bg-[#0d0d0f]">
+        <div class="max-w-6xl mx-auto">
+            <h2 class="text-3xl font-bold mb-16 text-center italic">SPESIFIKASI <span class="text-blue-500">TEKNIS</span></h2>
+            
+            <div class="grid grid-cols-2 md:grid-cols-4 gap-6">
+                <div class="glass-card p-8 text-center hover:bg-white/5 transition-colors">
+                    <i class="fas fa-engine text-blue-500 text-3xl mb-4"></i>
+                    <p class="text-gray-400 text-sm uppercase">Kapasitas Mesin</p>
+                    <p class="text-xl font-bold">250cc</p>
+                </div>
+                <div class="glass-card p-8 text-center hover:bg-white/5 transition-colors">
+                    <i class="fas fa-tachometer-alt text-blue-500 text-3xl mb-4"></i>
+                    <p class="text-gray-400 text-sm uppercase">Jarak Tempuh</p>
+                    <p class="text-xl font-bold">12.xxx KM</p>
+                </div>
+                <div class="glass-card p-8 text-center hover:bg-white/5 transition-colors">
+                    <i class="fas fa-calendar-alt text-blue-500 text-3xl mb-4"></i>
+                    <p class="text-gray-400 text-sm uppercase">Tahun Rakit</p>
+                    <p class="text-xl font-bold">2022</p>
+                </div>
+                <div class="glass-card p-8 text-center hover:bg-white/5 transition-colors">
+                    <i class="fas fa-gas-pump text-blue-500 text-3xl mb-4"></i>
+                    <p class="text-gray-400 text-sm uppercase">Bahan Bakar</p>
+                    <p class="text-xl font-bold">Pertamax Turbo</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <footer class="py-20 text-center">
+        <div class="glass-card max-w-2xl mx-auto p-12 mx-6">
+            <h3 class="text-3xl font-bold mb-4">Tertarik Memilikinya?</h3>
+            <p class="text-gray-400 mb-8">Nego halus, cek unit sepuasnya di lokasi. Klik tombol di bawah untuk langsung chat ke WhatsApp saya.</p>
+            <a href="https://wa.me/6281234567890" class="inline-block bg-blue-600 hover:bg-blue-500 text-white px-10 py-4 rounded-full font-bold transition-all shadow-lg shadow-blue-500/20">
+                Chat via WhatsApp: 0812-3456-7890
+            </a>
+        </div>
+        <p class="mt-12 text-gray-600 text-sm">© 2024 Premium Ride Garage. All Rights Reserved.</p>
+    </footer>
+
+</body>
+</html>
