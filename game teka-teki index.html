@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Jejak Nusantara - Animasi Skor</title>
+    <style>
+        :root {
+            --primary-color: #5D4037;
+            --secondary-color: #8D6E63;
+            --accent-color: #D7CCC8;
+            --highlight-color: #FFD700;
+            --text-color: #3E2723;
+            --success-color: #2E7D32;
+            --error-color: #C62828;
+            --bg-color: #F5F5DC;
+            --font-main: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            --font-display: 'Georgia', serif;
+            
+            --level-easy: #43A047;
+            --level-medium: #FB8C00;
+            --level-hard: #E53935;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            user-select: none;
+        }
+
+        body {
+            font-family: var(--font-main);
+            background-color: var(--bg-color);
+            background-image: radial-gradient(#D7CCC8 1px, transparent 1px);
+            background-size: 20px 20px;
+            color: var(--text-color);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            overflow: hidden;
+        }
+
+        #game-container {
+            width: 100%;
+            max-width: 600px;
+            height: 90vh;
+            background-color: #fff;
+            border-radius: 15px;
+            box-shadow: 0 10px 30px rgba(62, 39, 35, 0.3);
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            border: 4px solid var(--primary-color);
+            position: relative;
+        }
+
+        header {
+            background-color: var(--primary-color);
+            color: #fff;
+            padding: 10px 15px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+            z-index: 10;
+        }
+
+        .brand { font-family: var(--font-display); font-size: 1.1rem; font-weight: bold; }
+        .stats { font-size: 0.9rem; display: flex; gap: 15px; }
+        .stat-item span { font-weight: bold; color: var(--highlight-color); }
+
+        .screen {
+            flex: 1;
+            display: none; 
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            text-align: center;
+            overflow-y: auto;
+            animation: fadeIn 0.5s ease;
+        }
+        .screen.active { display: flex; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Level Selection Cards */
+        .level-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 15px;
+            width: 100%;
+            margin-bottom: 20px;
+        }
+        
+        .level-card {
+            padding: 20px;
+            border-radius: 12px;
+            color: white;
+            cursor: pointer;
+            transition: transform 0.2s;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            border: none;
+            font-size: 1.2rem;
+            font-weight: bold;
+            font-family: var(--font-display);
+        }
+        .level-card:hover { transform: scale(1.02); }
+        .level-card.easy { background-color: var(--level-easy); }
+        .level-card.medium { background-color: var(--level-medium); }
+        .level-card.hard { background-color: var(--level-hard); }
+
+        .current-level-badge {
+            background: #333; color: #fff; padding: 5px 15px; border-radius: 20px;
+            font-size: 0.85rem; margin-bottom: 15px; font-weight: bold; text-transform: uppercase;
+        }
+
+        .artifact-container {
+            position: relative;
+            width: 100%;
+            height: 200px;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            overflow: hidden;
+            border: 3px solid var(--secondary-color);
+            background-color: #000;
+        }
+        .artifact-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            filter: blur(6px) sepia(0.4);
+            transition: filter 0.8s ease;
+        }
+        .artifact-image.revealed { filter: blur(0) sepia(0); }
+
+        .question-box {
+            background-color: var(--accent-color);
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 25px;
+            width: 100%;
+            border: 1px dashed var(--primary-color);
+            min-height: 80px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        /* Animations */
+        @keyframes pulse-success {
+            0% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 125, 50, 0.7); }
+            70% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(46, 125, 50, 0); }
+            100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(46, 125, 50, 0); }
+        }
+        @keyframes shake-hard {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-4px, -2px) rotate(-1deg); }
+            20% { transform: translate(-6px, 0px) rotate(1deg); }
+            30% { transform: translate(6px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            100% { transform: translate(1px, -2px) rotate(-1deg); }
+        }
+        @keyframes flash { 0% { box-shadow: inset 0 0 0 0 transparent; } 50% { box-shadow: inset 0 0 100px rgba(198, 40, 40, 0.6); } 100% { box-shadow: inset 0 0 0 0 transparent; } }
+
+        /* ANIMASI SKOR AKHIR */
+        @keyframes scoreReveal {
+            0% {
+                opacity: 0;
+                transform: scale(0.5) rotate(-15deg) translateY(50px);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.4) rotate(5deg) translateY(-10px);
+            }
+            70% {
+                transform: scale(0.9) rotate(-2deg) translateY(0);
+            }
+            100% {
+                transform: scale(1) rotate(0deg) translateY(0);
+                opacity: 1;
+            }
+        }
+
+        .score-anim {
+            display: inline-block;
+            animation: scoreReveal 0.8s cubic-bezier(0.175, 0.885, 0.32, 1.275) forwards;
+        }
+
+        .options-grid { display: grid; grid-template-columns: 1fr; gap: 10px; width: 100%; }
+        @media (min-width: 400px) { .options-grid { grid-template-columns: 1fr 1fr; } }
+
+        .option-btn {
+            background-color: #fff; border: 2px solid var(--secondary-color); color: var(--primary-color);
+            padding: 12px; border-radius: 8px; font-size: 0.95rem; font-weight: bold; cursor: pointer;
+            transition: all 0.2s; text-transform: uppercase; box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        .option-btn:hover:not(:disabled) { background-color: #EFEBE9; transform: translateY(-2px); }
+        .option-btn:disabled { cursor: default; opacity: 0.8; }
+        .option-btn.correct { background-color: var(--success-color); color: white; border-color: var(--success-color); animation: pulse-success 0.6s ease-out; }
+        .option-btn.wrong { background-color: var(--error-color); color: white; border-color: var(--error-color); }
+        .shake-screen { animation: shake-hard 0.5s; }
+        .flash-red { animation: flash 0.3s; }
+
+        /* Modal */
+        #feedback-modal { position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.85); display: flex; justify-content: center; align-items: center; z-index: 100; opacity: 0; pointer-events: none; transition: opacity 0.3s; }
+        #feedback-modal.visible { opacity: 1; pointer-events: auto; }
+        .modal-content { background: #fff; padding: 25px; border-radius: 15px; text-align: center; width: 90%; max-width: 400px; border: 4px solid var(--highlight-color); animation: popIn 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275); }
+        @keyframes popIn { from { transform: scale(0.8); } to { transform: scale(1); } }
+        .history-fact { margin: 15px 0; font-size: 0.9rem; line-height: 1.5; color: #555; background: #FFF8E1; padding: 15px; border-radius: 8px; text-align: left; }
+        .lives { color: var(--error-color); font-size: 1.2rem; }
+        .progress-container { width: 100%; height: 6px; background: #eee; position: absolute; top: 0; left: 0; }
+        .progress-bar { height: 100%; background: var(--highlight-color); width: 0%; transition: width 0.3s; }
+        .btn { background-color: var(--primary-color); color: white; border: none; padding: 12px 30px; font-size: 1.1rem; border-radius: 30px; cursor: pointer; box-shadow: 0 4px 6px rgba(0,0,0,0.2); }
+        .btn:hover { transform: scale(1.05); background-color: var(--secondary-color); }
+        
+        /* Styling Khusus Skor Akhir */
+        #final-score {
+            font-size: 3.5rem; /* Ukuran besar */
+            font-weight: 900;
+            color: var(--level-medium); /* Warna emas/oranye */
+            text-shadow: 2px 2px 0px #3E2723;
+            margin: 10px 0;
+            display: inline-block; /* Penting agar transform animasi bekerja */
+        }
+    </style>
+</head>
+<body>
+
+<div id="game-container">
+    <div class="progress-container">
+        <div class="progress-bar" id="progress-bar"></div>
+    </div>
+
+    <header>
+        <div class="brand">Jejak Nusantara</div>
+        <div class="stats">
+            <div class="stat-item">Skor: <span id="score-display">0</span></div>
+            <div class="stat-item lives">❤❤❤</div>
+        </div>
+    </header>
+
+    <!-- Layar Utama: Pilihan Level -->
+    <section id="start-screen" class="screen active">
+        <h1 class="title">Pilih Level</h1>
+        <p class="intro-text" style="margin-bottom: 20px;">Tingkatkan pengetahuan sejarah Anda! (10 Soal per Level)</p>
+        
+        <div class="level-grid">
+            <button class="level-card easy" onclick="game.start(1)">
+                Level Mudah<br>
+                <small style="font-size:0.8rem; font-weight:normal; opacity:0.9;">Pengetahuan Dasar</small>
+            </button>
+            <button class="level-card medium" onclick="game.start(2)">
+                Level Sedang<br>
+                <small style="font-size:0.8rem; font-weight:normal; opacity:0.9;">Pahlawan & Kerajaan</small>
+            </button>
+            <button class="level-card hard" onclick="game.start(3)">
+                Level Sulit<br>
+                <small style="font-size:0.8rem; font-weight:normal; opacity:0.9;">Detail Sejarah & Kuno</small>
+            </button>
+        </div>
+    </section>
+
+    <!-- Layar Permainan -->
+    <section id="game-screen" class="screen">
+        <div id="level-badge" class="current-level-badge">Level Mudah</div>
+        <div class="artifact-container">
+            <img src="" alt="Artefak Sejarah" id="current-image" class="artifact-image">
+        </div>
+        <div class="question-box">
+            <p class="question-text" id="question-text">Loading...</p>
+        </div>
+        <div class="options-grid" id="options-grid"></div>
+    </section>
+
+    <!-- Layar Akhir -->
+    <section id="end-screen" class="screen">
+        <h1 class="title" id="end-title">Selesai</h1>
+        <p class="intro-text">Skor Akhir Kamu:</p>
+        
+        <!-- Elemen Score dengan animasi -->
+        <span id="final-score">0</span>
+        
+        <p id="end-message" style="margin-bottom: 20px;">...</p>
+        <button class="btn" onclick="game.resetToMenu()">Kembali ke Menu</button>
+    </section>
+
+    <!-- Modal Feedback -->
+    <div id="feedback-modal">
+        <div class="modal-content">
+            <h2 class="modal-title" id="modal-title">Benar!</h2>
+            <div class="history-fact" id="modal-fact">...</div>
+            <button class="btn" id="modal-btn" onclick="game.nextLevel()">Lanjut</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    const questionsData = [
+        // --- LEVEL 1: MUDAH (10 SOAL) ---
+        { id: 1, level: 1, answer: "JAKARTA", question: "Ibu kota negara Indonesia saat ini?", fact: "Jakarta adalah pusat pemerintahan dan ekonomi Indonesia.", options: ["JAKARTA", "BANDUNG", "SURABAYA", "MEDAN"], imageSeed: "jakarta" },
+        { id: 2, level: 1, answer: "BATIK", question: "Kain tradisional yang diakui UNESCO sebagai warisan budaya.", fact: "Batik memiliki motif beragam seperti Parang, Mega Mendung, dan Kawung.", options: ["SONGKET", "BATIK", "ULOS", "TENUN"], imageSeed: "batik" },
+        { id: 3, level: 1, answer: "GARUDA", question: "Nama burung mitologi yang menjadi lambang negara Indonesia.", fact: "Garuda Pancasila menggambarkan kekuatan dan semangat kebangsaan.", options: ["ELANG", "RAJAWALI", "GARUDA", "NAGA"], imageSeed: "garuda" },
+        { id: 4, level: 1, answer: "RENDANG", question: "Makanan asal Sumatera Barat yang terkenal di dunia.", fact: "Rendang masuk dalam daftar makanan paling lezat di dunia versi CNN.", options: ["SOTO", "SATE", "RENDANG", "GADO"], imageSeed: "rendang" },
+        { id: 5, level: 1, answer: "1945", question: "Tahun kemerdekaan Indonesia diproklamasikan.", fact: "Proklamasi dibacakan oleh Ir. Soekarno dan Mohammad Hatta.", options: ["1942", "1945", "1950", "1928"], imageSeed: "flag" },
+        { id: 6, level: 1, answer: "SOEKARNO", question: "Presiden pertama Republik Indonesia.", fact: "Beliau juga dikenal sebagai Bapak Pendiri Bangsa.", options: ["SOEHARTO", "SOEKARNO", "HABIBIE", "GUS DUR"], imageSeed: "soekarno" },
+        { id: 7, level: 1, answer: "BAHASA", question: "Bahasa persatuan Indonesia adalah Bahasa...", fact: "Sumpah Pemuda menegaskan satu tanah air, satu bangsa, dan satu bahasa.", options: ["JAWA", "SUNDA", "INDONESIA", "INGGRIS"], imageSeed: "book" },
+        { id: 8, level: 1, answer: "MONAS", question: "Tugu peringatan setinggi 132 meter di Jakarta.", fact: "Monas adalah singkatan dari Monumen Nasional.", options: ["MONAS", "TUGU MUDA", "JAM GADANG", "PATUNG SUDIRMAN"], imageSeed: "monas" },
+        { id: 9, level: 1, answer: "BALI", question: "Pulau Dewata yang terkenal dengan kebudayaan Hindu.", fact: "Bali adalah tujuan wisata terpopuler di Indonesia.", options: ["SUMATERA", "KALIMANTAN", "JAWA", "BALI"], imageSeed: "bali" },
+        { id: 10, level: 1, answer: "KOMODO", question: "Hewan purba mirip kadal yang habitatnya di NTT.", fact: "Komodo adalah hewan karnivora terbesar di dunia.", options: ["BIWAK", "KOMODO", "VARANUS", "BUAYA"], imageSeed: "komodo" },
+
+        // --- LEVEL 2: SEDANG (10 SOAL) ---
+        { id: 11, level: 2, answer: "GAJAH MADA", question: "Tokoh yang mengucapkan Sumpah Palapa.", fact: "Gajah Mada adalah Mahapatri Majapahit di bawah Hayam Wuruk.", options: ["HAYAM WURUK", "GAJAH MADA", "KEN AROK", "BIMA"], imageSeed: "gajahmada" },
+        { id: 12, level: 2, answer: "1928", question: "Tahun diadakannya Sumpah Pemuda.", fact: "Peristiwa ini terjadi di Jakarta pada 28 Oktober.", options: ["1908", "1942", "1928", "1945"], imageSeed: "pemuda" },
+        { id: 13, level: 2, answer: "CUT NYAK MEIT", question: "Pahlawan nasional wanita dari Aceh.", fact: "Beliau melawan Belanda demi mempertahankan kekhalifahan Aceh.", options: ["KARTINI", "DEWI SARTIKA", "CUT NYAK MEIT", "MARTHA"], imageSeed: "aceh" },
+        { id: 14, level: 2, answer: "SRIVIJAYA", question: "Kerajaan maritim Buddha yang berpusat di Palembang.", fact: "Sriwijaya menguasai jalur perdagangan Selat Malaka.", options: ["TARUMANEGARA", "MATARAM", "SRIVIJAYA", "SINGHASARI"], imageSeed: "srivijaya" },
+        { id: 15, level: 2, answer: "MOHAMMAD HATTA", question: "Wakil Presiden pertama RI.", fact: "Beliau dikenal sebagai Bapak Koperasi Indonesia.", options: ["SUTAN SYAHRIR", "MOHAMMAD HATTA", "ADAM MALIK", "SUDIRMAN"], imageSeed: "hatta" },
+        { id: 16, level: 2, answer: "DIPONEGORO", question: "Pangeran yang memimpin Perang Jawa (1825-1830).", fact: "Perang ini juga dikenal sebagai Perang Diponegoro melawan Belanda.", options: ["ANTASARI", "TEUKU UMAR", "DIPONEGORO", "IMAM BONJOL"], imageSeed: "diponegoro" },
+        { id: 17, level: 2, answer: "KARTINI", question: "Pelopor emansipasi wanita Indonesia.", fact: "Hari Kartini diperingati setiap tanggal 21 April.", options: ["MEIT", "KARTINI", "DEWI SARTIKA", "RASUNA SAID"], imageSeed: "kartini" },
+        { id: 18, level: 2, answer: "1908", question: "Tahun berdirinya Budi Utomo, organisasi pemuda modern.", fact: "Budi Utomo didirikan oleh dr. Soetomo.", options: ["1908", "1928", "1942", "1945"], imageSeed: "budimutomo" },
+        { id: 19, level: 2, answer: "BOROBUDUR", question: "Candi Buddha terbesar di dunia.", fact: "Terletak di Magelang, Jawa Tengah.", options: ["PRAMBANAN", "BOROBUDUR", "DIENG", "SEWU"], imageSeed: "borobudur" },
+        { id: 20, level: 2, answer: "BANDUNG", question: "Kota tempat berlangsungnya Konferensi Asia Afrika 1955.", fact: "Bung Karno menyebutnya sebagai 'Bandung Lautan Api'.", options: ["BANDUNG", "JAKARTA", "YOGYAKARTA", "DENPASAR"], imageSeed: "asiafrica" },
+
+        // --- LEVEL 3: SULIT (10 SOAL) ---
+        { id: 21, level: 3, answer: "TROWULAN", question: "Nama situs ibu kota Kerajaan Majapahit.", fact: "Situs ini berada di Mojokerto, Jawa Timur.", options: ["MALANG", "TROWULAN", "PASURUAN", "KEDIRI"], imageSeed: "trowulan" },
+        { id: 22, level: 3, answer: "PURNAVARMAN", question: "Raja Tarumanegara yang meninggalkan prasasti jejak kaki.", fact: "Prasasti Ciaruteun menggambarkan jejak kaki seperti kaki Wisnu.", options: ["LINGGA BUANA", "SURYAWARMAN", "PURNAVARMAN", "SANJAYA"], imageSeed: "prasasti" },
+        { id: 23, level: 3, answer: "NAGARAKRETAGAMA", question: "Kitab puisi kuno karya Mpu Prapanca.", fact: "Kitar ini ditulis pada tahun 1365 masa pemerintahan Hayam Wuruk.", options: ["ARJUNA WIWAHA", "NAGARAKRETAGAMA", "SUTASOMA", "PARARATON"], imageSeed: "nagarak" },
+        { id: 24, level: 3, answer: "BUNGSU", question: "Julukan Sultan Hasanuddin dari Gowa.", fact: "Beliau diberi gelar De Haantjes van Het Osten oleh VOC.", options: ["KARE BONTOLE", "BUNGSU", "TUAN MAJELIS", "PALAKKA"], imageSeed: "gowa" },
+        { id: 25, level: 3, answer: "PETA", question: "Pasukan semi-militer ciptaan Jepang tahun 1943.", fact: "Kelembagaan ini menjadi cikal bakal TNI.", options: ["HEIHO", "PETA", "GYUGUN", "ROMUSHA"], imageSeed: "peta" },
+        { id: 26, level: 3, answer: "KUTAI", question: "Kerajaan tertua di Indonesia yang berada di Kalimantan.", fact: "Dibuktikan dengan Prasasti Yupa dari abad ke-4 M.", options: ["SRIWIJAYA", "KUTAI", "TARUMANEGARA", "MATARAM"], imageSeed: "kutai" },
+        { id: 27, level: 3, answer: "SUTASOMA", question: "Kakawin karya Mpu Tantular yang melahirkan semboyan Bhinneka Tunggal Ika.", fact: "Kitar ini berisi ajaran kebijaksanaan dan toleransi.", options: ["ARJUNA", "NAGARA", "SUTASOMA", "PARARATON"], imageSeed: "sutasoma" },
+        { id: 28, level: 3, answer: "HEIHO", question: "Pasukan bantuan Jepang untuk pertahanan (tambahan PETA).", fact: "Anggota Heiho tidak bersenjata lengkap, bertugas sebagai tenaga kerja tempur.", options: ["HEIHO", "PETA", "ROMUSHA", "GIYUGUN"], imageSeed: "heiho" },
+        { id: 29, level: 3, answer: "LINGGA", question: "Nama Raja Tarumanegara sebelum Purnawarman.", fact: "Raja Lingga tercatat sebagai ayah dari Purnawarman.", options: ["LINGGA", "DEWAWARMAN", "JAYASINGAWARMAN", "INDRAWARMAN"], imageSeed: "old_king" },
+        { id: 30, level: 3, answer: "SUDIRMAN", question: "Panglima Besar TNI pertama yang berjuang melawan Belanda.", fact: "Beliau gugur di Magelang dan dimakamkan di Krapyak.", options: ["SUDIRMAN", "AHMAD YANI", "NASUTION", "HARTONO"], imageSeed: "sudirman" }
+    ];
+
+    const game = {
+        currentQuestionIndex: 0,
+        score: 0,
+        lives: 3,
+        isGameActive: false,
+        currentData: null,
+        activeQuestions: [], 
+
+        elements: {
+            startScreen: document.getElementById('start-screen'),
+            gameScreen: document.getElementById('game-screen'),
+            endScreen: document.getElementById('end-screen'),
+            scoreDisplay: document.getElementById('score-display'),
+            livesDisplay: document.querySelector('.lives'),
+            questionText: document.getElementById('question-text'),
+            optionsGrid: document.getElementById('options-grid'),
+            currentImage: document.getElementById('current-image'),
+            feedbackModal: document.getElementById('feedback-modal'),
+            modalTitle: document.getElementById('modal-title'),
+            modalFact: document.getElementById('modal-fact'),
+            modalBtn: document.getElementById('modal-btn'),
+            finalScore: document.getElementById('final-score'),
+            endMessage: document.getElementById('end-message'),
+            progressBar: document.getElementById('progress-bar'),
+            levelBadge: document.getElementById('level-badge'),
+            gameContainer: document.getElementById('game-container')
+        },
+
+        playFeedbackAudio: function(type) {
+            if ('speechSynthesis' in window) {
+                window.speechSynthesis.cancel();
+                const textToSay = type === 'correct' ? 'Benar!' : 'Salah!';
+                const utterance = new SpeechSynthesisUtterance(textToSay);
+                utterance.lang = 'id-ID';
+                utterance.rate = 1.2;
+                utterance.pitch = type === 'correct' ? 1.2 : 0.8;
+                window.speechSynthesis.speak(utterance);
+            }
+        },
+
+        start: function(levelChoice) {
+            this.activeQuestions = questionsData.filter(q => q.level === levelChoice);
+            this.shuffleArray(this.activeQuestions);
+            
+            this.currentQuestionIndex = 0;
+            this.score = 0;
+            this.lives = 3;
+            this.isGameActive = true;
+            
+            this.updateStats();
+            this.showScreen('game-screen');
+            this.loadLevel();
+        },
+
+        shuffleArray: function(array) {
+            for (let i = array.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [array[i], array[j]] = [array[j], array[i]];
+            }
+        },
+
+        loadLevel: function() {
+            this.currentData = this.activeQuestions[this.currentQuestionIndex];
+            
+            const lvl = this.currentData.level;
+            const badge = this.elements.levelBadge;
+            badge.textContent = lvl === 1 ? "Level Mudah" : (lvl === 2 ? "Level Sedang" : "Level Sulit");
+            badge.style.backgroundColor = lvl === 1 ? "var(--level-easy)" : (lvl === 2 ? "var(--level-medium)" : "var(--level-hard)");
+
+            this.elements.questionText.textContent = this.currentData.question;
+            this.elements.currentImage.classList.remove('revealed');
+            this.elements.currentImage.src = `https://picsum.photos/seed/${this.currentData.imageSeed}/500/300.jpg`;
+            
+            const container = this.elements.optionsGrid;
+            container.innerHTML = '';
+            let options = [...this.currentData.options];
+            options.sort(() => Math.random() - 0.5);
+
+            options.forEach(text => {
+                const btn = document.createElement('button');
+                btn.className = 'option-btn';
+                btn.textContent = text;
+                btn.onclick = () => this.handleGuess(text, btn);
+                container.appendChild(btn);
+            });
+
+            const progress = (this.currentQuestionIndex / this.activeQuestions.length) * 100;
+            this.elements.progressBar.style.width = `${progress}%`;
+        },
+
+        handleGuess: function(selectedText, btnElement) {
+            if (!this.isGameActive) return;
+
+            const allBtns = document.querySelectorAll('.option-btn');
+            allBtns.forEach(b => b.disabled = true);
+
+            if (selectedText === this.currentData.answer) {
+                btnElement.classList.add('correct');
+                this.playFeedbackAudio('correct');
+                
+                let points = this.currentData.level === 3 ? 150 : (this.currentData.level === 2 ? 100 : 50);
+                this.score += points;
+                this.updateStats();
+                
+                this.isGameActive = false;
+                this.elements.currentImage.classList.add('revealed');
+                
+                setTimeout(() => this.showModal(true), 800);
+            } else {
+                btnElement.classList.add('wrong');
+                this.playFeedbackAudio('wrong');
+                
+                this.elements.gameContainer.classList.add('shake-screen');
+                this.elements.gameContainer.classList.add('flash-red');
+                setTimeout(() => {
+                    this.elements.gameContainer.classList.remove('shake-screen');
+                    this.elements.gameContainer.classList.remove('flash-red');
+                }, 500);
+
+                this.lives--;
+                this.updateStats();
+
+                allBtns.forEach(b => {
+                    if(b.textContent === this.currentData.answer) {
+                        b.classList.add('correct');
+                    }
+                });
+
+                if (this.lives <= 0) {
+                    setTimeout(() => this.gameOver(false), 1000);
+                } else {
+                    setTimeout(() => this.nextLevel(), 1500);
+                }
+            }
+        },
+
+        nextLevel: function() {
+            this.closeModal();
+            this.currentQuestionIndex++;
+            if (this.currentQuestionIndex < this.activeQuestions.length) {
+                this.isGameActive = true;
+                this.loadLevel();
+            } else {
+                this.gameOver(true);
+            }
+        },
+
+        gameOver: function(isWin) {
+            this.isGameActive = false;
+            this.showScreen('end-screen');
+            
+            // Set skor text
+            this.elements.finalScore.textContent = this.score;
+            
+            // --- TRIGGER ANIMASI SKOR ---
+            const scoreEl = this.elements.finalScore;
+            
+            // 1. Hapus class animasi agar bisa dimulai ulang
+            scoreEl.classList.remove('score-anim');
+            
+            // 2. Trigger reflow (teknik CSS untuk mereset animasi)
+            void scoreEl.offsetWidth;
+            
+            // 3. Tambahkan class animasi lagi
+            scoreEl.classList.add('score-anim');
+            // ---------------------------------
+
+            if (isWin) {
+                this.elements.endTitle.textContent = "Level Selesai!";
+                this.elements.endMessage.textContent = "Luar biasa! Anda berhasil menyelesaikan semua soal.";
+                this.playFeedbackAudio('correct');
+                scoreEl.style.color = "var(--success-color)";
+            } else {
+                this.elements.endTitle.textContent = "Gagal";
+                this.elements.endMessage.textContent = "Nyawa habis. Jangan menyerah!";
+                this.playFeedbackAudio('wrong');
+                scoreEl.style.color = "var(--error-color)";
+            }
+        },
+
+        resetToMenu: function() {
+            this.showScreen('start-screen');
+            // Reset warna skor saat kembali ke menu
+            this.elements.finalScore.style.color = "var(--level-medium)";
+        },
+
+        updateStats: function() {
+            this.elements.scoreDisplay.textContent = this.score;
+            this.elements.livesDisplay.textContent = "❤".repeat(this.lives);
+        },
+
+        showScreen: function(id) {
+            document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+            document.getElementById(id).classList.add('active');
+        },
+
+        showModal: function(isSuccess) {
+            this.elements.modalTitle.textContent = isSuccess ? "Benar!" : "Salah";
+            this.elements.modalTitle.style.color = isSuccess ? "var(--success-color)" : "var(--error-color)";
+            this.elements.modalFact.innerHTML = `<strong>${this.currentData.answer}</strong><br><br>${this.currentData.fact}`;
+            this.elements.feedbackModal.classList.add('visible');
+        },
+
+        closeModal: function() {
+            this.elements.feedbackModal.classList.remove('visible');
+        }
+    };
+
+</script>
+
+</body>
+</html>
